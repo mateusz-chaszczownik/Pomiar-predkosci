@@ -1,0 +1,65 @@
+#define trigPin 12
+#define echoPin 11
+ 
+unsigned long START=0;
+unsigned long KONIEC=0;
+ 
+void setup() {
+  Serial.begin (9600);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+}
+ 
+void loop() {
+  float ODLEGLOSC1=zmierzOdleglosc();
+  delay(100);
+  float ODLEGLOSC2=zmierzOdleglosc();
+  float V=ODLEGLOSC1-ODLEGLOSC2;
+  float VABS=abs(V/10);
+  if(VABS>0.05)
+  {
+    START=0;
+    KONIEC=0;
+    START=millis();
+    float PSS=zmierzOdleglosc();
+    float PHA=1;
+    while(PHA>0.05)
+    {
+       float ODLEGLOSC3=zmierzOdleglosc();
+       delay(100);
+       float ODLEGLOSC4=zmierzOdleglosc();
+       float vwh=ODLEGLOSC3-ODLEGLOSC4;
+       PHA=abs(vwh/10);
+    }
+    KONIEC=millis();
+    float PSK=zmierzOdleglosc();
+    float ROZNICAODLEGLOSCI=abs((PSS-PSK)*10);
+    float ROZNICACZASU= (KONIEC-START);
+    float PREDKOSCLICZ=ROZNICAODLEGLOSCI/ROZNICACZASU*100;
+    if(ROZNICAODLEGLOSCI>50)
+    {
+      if(ROZNICACZASU>500)
+      {
+      Serial.print("PREDKOSC: ");
+      Serial.print(PREDKOSCLICZ);
+      Serial.println(" CM/S ");
+      }
+ 
+    }
+  }
+} 
+ 
+float zmierzOdleglosc() {
+  long CZAS, ODLEGLOSC;
+ 
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+ 
+  CZAS = pulseIn(echoPin, HIGH);
+  ODLEGLOSC = CZAS / 58;
+ 
+  return ODLEGLOSC;
+}
